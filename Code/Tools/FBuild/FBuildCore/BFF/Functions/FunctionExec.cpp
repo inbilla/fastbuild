@@ -41,7 +41,7 @@ FunctionExec::FunctionExec()
 		 !GetString( funcStartIter, argsV,			".ExecArguments" ) ||
 		 !GetString( funcStartIter, workingDirV,	".ExecWorkingDir" ) ||
 		 !GetInt( funcStartIter, expectedReturnCode, ".ExecReturnCode", 0, false ) ||
-		 !GetBool( funcStartIter, useStdOutAsOutput, ".ExecUseStdOutAsOutput ", false, false))
+		 !GetBool( funcStartIter, useStdOutAsOutput, ".ExecUseStdOutAsOutput", false, false))
 	{
 		return false;
 	}
