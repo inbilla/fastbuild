@@ -125,7 +125,7 @@ void TestGraph::TestNodeTypes() const
 		Dependencies empty;
 		Dependencies inputs;
 		inputs.Append( Dependency( fn ) );
-		Node * n = ng.CreateExecNode( AStackString<>( "dst" ), inputs, fn, AStackString<>( "args" ), AStackString<>( "workingDir" ), 0, empty );
+		Node * n = ng.CreateExecNode( AStackString<>( "dst" ), inputs, fn, AStackString<>( "args" ), AStackString<>( "workingDir" ), 0, empty, false );
 		TEST_ASSERT( n->GetType() == Node::EXEC_NODE );
 		TEST_ASSERT( ExecNode::GetTypeS() == Node::EXEC_NODE);
 		TEST_ASSERT( AStackString<>( "Exec" ) == n->GetTypeName() );
@@ -270,7 +270,7 @@ void TestGraph::TestExecNode() const
 	Dependencies empty;
 	Dependencies inputFiles;
 	inputFiles.Append( Dependency(srcNode) );
-	ExecNode * execNode = ng.CreateExecNode( dstFile, inputFiles, exe, exeArgs, workingDir, 1, empty );
+	ExecNode * execNode = ng.CreateExecNode( dstFile, inputFiles, exe, exeArgs, workingDir, 1, empty, false );
 
 	// build and verify
 	TEST_ASSERT( fb.Build( execNode ) );

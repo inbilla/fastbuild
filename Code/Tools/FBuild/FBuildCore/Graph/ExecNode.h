@@ -23,7 +23,8 @@ public:
 						const AString & arguments,
 						const AString & workingDir,
 						int32_t expectedReturnCode,
-						const Dependencies & preBuildDependencies );
+						const Dependencies & preBuildDependencies,
+						bool useStdOutAsOutput );
 	virtual ~ExecNode();
 
 	static inline Node::Type GetTypeS() { return Node::EXEC_NODE; }
@@ -43,6 +44,7 @@ private:
 	AString		m_Arguments;
 	AString		m_WorkingDir;
 	int32_t		m_ExpectedReturnCode;
+	bool		m_UseStdOutAsOutput;
 };
 
 //------------------------------------------------------------------------------
