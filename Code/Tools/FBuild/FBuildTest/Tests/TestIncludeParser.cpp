@@ -3,7 +3,7 @@
 
 // Includes
 //------------------------------------------------------------------------------
-#include "TestFramework/UnitTest.h"
+#include "FBuildTest.h"
 
 #include "Tools/FBuild/FBuildCore/FBuild.h"
 #include "Tools/FBuild/FBuildCore/Helpers/CIncludeParser.h"
@@ -17,13 +17,15 @@
 
 // TestIncludeParser
 //------------------------------------------------------------------------------
-class TestIncludeParser : public UnitTest
+class TestIncludeParser : public FBuildTest
 {
 private:
 	DECLARE_TESTS
 
 	void TestMSVCPreprocessedOutput() const;
 	void TestMSVCShowIncludesOutput() const;
+	void TestMSVC_P() const;
+	void TestMSVC_ShowIncludesWithWarnings() const;
 	void TestGCCPreprocessedOutput() const;
 	void TestClangPreprocessedOutput() const;
 	void TestClangMSExtensionsPreprocessedOutput() const;
@@ -36,6 +38,8 @@ REGISTER_TESTS_BEGIN( TestIncludeParser )
     #if defined( __WINDOWS__ )
         REGISTER_TEST( TestMSVCPreprocessedOutput );
         REGISTER_TEST( TestMSVCShowIncludesOutput );
+		REGISTER_TEST( TestMSVC_P );
+		REGISTER_TEST( TestMSVC_ShowIncludesWithWarnings );
     #endif
 	REGISTER_TEST( TestGCCPreprocessedOutput );
 	REGISTER_TEST( TestClangPreprocessedOutput );
@@ -103,6 +107,61 @@ void TestIncludeParser::TestMSVCShowIncludesOutput() const
 
 	float time = t.GetElapsed();
 	OUTPUT( "MSVC /showincludes   : %2.3fs (%2.1f MiB/sec)\n", time, ( (float)( fileSize * repeatCount / ( 1024.0f * 1024.0f ) ) / time ) );
+}
+
+// TestMSVC_P
+//------------------------------------------------------------------------------
+void TestIncludeParser::TestMSVC_P() const
+{
+	FBuildOptions options;
+	options.m_ShowSummary = true; // required to generate stats for node count checks
+	options.m_ConfigFile = "Data/TestIncludeParser/MSVC-P/fbuild.bff";
+
+	FBuild fBuild( options );
+	fBuild.Initialize();
+
+	const AStackString<> file( "../../../../ftmp/Test/IncludeParser/MSVC-P/test.i" );
+
+	// clean up anything left over from previous runs
+	EnsureFileDoesNotExist( file );
+
+	// Build
+	TEST_ASSERT( fBuild.Build( AStackString<>( "MSVC-P" ) ) );
+
+	// make sure all output files are as expected
+	EnsureFileExists( file );
+
+	// Check stats
+	//				 Seen,	Built,	Type
+	CheckStatsNode ( 1,		1,		Node::OBJECT_LIST_NODE );
+	CheckStatsNode ( 1,		1,		Node::FILE_NODE );
+	CheckStatsNode ( 1,		1,		Node::COMPILER_NODE );
+	CheckStatsNode ( 1,		1,		Node::OBJECT_NODE );
+	CheckStatsTotal( 4,		4 );
+}
+
+// TestMSVC_ShowIncludesWithWarnings
+//------------------------------------------------------------------------------
+void TestIncludeParser::TestMSVC_ShowIncludesWithWarnings() const
+{
+	FBuild fb; // needed for CleanPath
+
+	FileStream f;
+	TEST_ASSERT( f.Open( "Data/TestIncludeParser/MSVC-ShowIncludes/WithWarnings.output", FileStream::READ_ONLY) )
+	const size_t fileSize = (size_t)f.GetFileSize();
+	AutoPtr< char > mem( (char *)ALLOC( fileSize + 1 ) );
+	TEST_ASSERT( f.Read( mem.Get(), fileSize ) == fileSize );
+	mem.Get()[ fileSize ] = 0;
+
+	CIncludeParser parser;
+	TEST_ASSERT( parser.ParseMSCL_Output( mem.Get(), fileSize ) );
+
+	// check number of includes found to prevent future regressions
+	const Array< AString > & includes = parser.GetIncludes();
+	TEST_ASSERT( includes.GetSize() == 0 );
+	#ifdef DEBUG
+		TEST_ASSERT( parser.GetNonUniqueCount() == 0 );
+	#endif
 }
 
 // TestGCCPreprocessedOutput

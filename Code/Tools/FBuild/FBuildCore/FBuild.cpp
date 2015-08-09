@@ -48,7 +48,9 @@
 // CONSTRUCTOR - FBuild
 //------------------------------------------------------------------------------
 FBuild::FBuild( const FBuildOptions & options )
-	: m_Client( nullptr )
+	: m_DependencyGraph( nullptr )
+	, m_JobQueue( nullptr )
+	, m_Client( nullptr )
 	, m_Cache( nullptr )
 	, m_LastProgressOutputTime( 0.0f )
 	, m_LastProgressCalcTime( 0.0f )

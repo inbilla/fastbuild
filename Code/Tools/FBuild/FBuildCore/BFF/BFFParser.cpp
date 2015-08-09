@@ -632,7 +632,13 @@ bool BFFParser::ParseIncludeDirective( BFFIterator & iter )
 		return false;
 	}
 
-	AStackString<> include( stringStart.GetCurrent(), iter.GetCurrent() );
+	// unescape and substitute variables
+	AStackString<> include;
+	if ( PerformVariableSubstitutions( stringStart, iter, include ) == false )
+	{
+		return false;
+	}
+
 	iter++; // skip closing quote before returning
 
 	FLOG_INFO( "Including: %s\n", include.Get() );
