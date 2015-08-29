@@ -27,7 +27,6 @@ DLLNode::DLLNode( const AString & linkerOutputName,
 				  Node * linkerStampExe,
 				  const AString & linkerStampExeArgs )
 : LinkerNode( linkerOutputName, inputLibraries, otherLibraries, linkerType, linker, linkerArgs, flags, assemblyResources, importLibName, linkerStampExe, linkerStampExeArgs )
-, m_ImportLibName( importLibName )
 {
 	m_Type = DLL_NODE;
 }
