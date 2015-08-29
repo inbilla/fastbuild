@@ -33,12 +33,14 @@ LinkerNode::LinkerNode( const AString & linkerOutputName,
 						 const AString & linkerArgs,
 						 uint32_t flags,
 						 const Dependencies & assemblyResources,
+						 const AString & importLibName,
 						 Node * linkerStampExe, 
 						 const AString & linkerStampExeArgs )
 : FileNode( linkerOutputName, Node::FLAG_NONE )
 , m_Flags( flags )
 , m_AssemblyResources( assemblyResources )
 , m_OtherLibraries( otherLibraries )
+, m_ImportLibName( importLibName )
 , m_LinkerStampExe( linkerStampExe )
 , m_LinkerStampExeArgs( linkerStampExeArgs )
 {
@@ -80,6 +82,19 @@ LinkerNode::~LinkerNode()
 /*virtual*/ Node::BuildResult LinkerNode::DoBuild( Job * UNUSED( job ) )
 {
 	DoPreLinkCleanup();
+
+	// Make sure the implib output directory exists
+	if (m_ImportLibName.IsEmpty() == false)
+	{
+		AStackString<> cleanPath;
+		NodeGraph::CleanPath(m_ImportLibName, cleanPath);
+
+		if (EnsurePathExistsForFile(cleanPath) == false)
+		{
+			// EnsurePathExistsForFile will have emitted error
+			return NODE_RESULT_FAILED;
+		}
+	}
 
 	// Format compiler args string
 	AStackString< 4 * KILOBYTE > fullArgs;
@@ -660,6 +675,7 @@ void LinkerNode::EmitStampMessage() const
 	NODE_SAVE( m_Flags );
 	NODE_SAVE_DEPS( m_AssemblyResources );
 	NODE_SAVE_DEPS( m_OtherLibraries );
+	NODE_SAVE( m_ImportLibName );
     NODE_SAVE_NODE( m_LinkerStampExe );
     NODE_SAVE( m_LinkerStampExeArgs );
 }

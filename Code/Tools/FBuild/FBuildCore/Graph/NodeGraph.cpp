@@ -760,6 +760,7 @@ ExeNode * NodeGraph::CreateExeNode( const AString & linkerOutputName,
 									const AString & linkerArgs,
 									uint32_t flags,
 									const Dependencies & assemblyResources,
+									const AString & importLibName,
 									Node * linkerStampExe,
 									const AString & linkerStampExeArgs )
 {
@@ -776,6 +777,7 @@ ExeNode * NodeGraph::CreateExeNode( const AString & linkerOutputName,
 								  linkerArgs,
 								  flags,
 								  assemblyResources,
+								  importLibName,
 								  linkerStampExe,
 								  linkerStampExeArgs ) );
 	AddNode( node );

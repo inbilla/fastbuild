@@ -53,7 +53,7 @@ public:
 	}
 	inline ~NodeGraphHeader() {}
 
-	enum { NODE_GRAPH_CURRENT_VERSION = 66 };
+	enum { NODE_GRAPH_CURRENT_VERSION = 67 };
 
 	bool IsValid() const
 	{
@@ -164,6 +164,7 @@ public:
 								   const AString & linkerArgs,
 								   uint32_t flags,
 								   const Dependencies & assemblyResources,
+								   const AString & importLibName,
 								   Node * linkerStampExe,
 								   const AString & linkerStampExeArgs );
 	UnityNode *	CreateUnityNode( const AString & unityName );

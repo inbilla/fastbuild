@@ -25,6 +25,7 @@ public:
 						 const AString & linkerArgs,
 						 uint32_t flags,
 						 const Dependencies & assemblyResources,
+						 const AString & importLibName,
 						 Node * linkerStampExe, 
 						 const AString & linkerStampExeArgs );
 	virtual ~LinkerNode();
@@ -70,7 +71,8 @@ protected:
 	uint32_t m_Flags;
 	Dependencies m_AssemblyResources;
 	Dependencies m_OtherLibraries;
-    const Node * m_LinkerStampExe;
+	AString m_ImportLibName;
+	const Node * m_LinkerStampExe;
     AString m_LinkerStampExeArgs;
 };
 

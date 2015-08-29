@@ -23,9 +23,10 @@ ExeNode::ExeNode( const AString & linkerOutputName,
 				  const AString & linkerArgs,
 				  uint32_t flags,
 				  const Dependencies & assemblyResources,
+				  const AString & importLibName,
 				  Node * linkerStampExe,
 				  const AString & linkerStampExeArgs )
-: LinkerNode( linkerOutputName, inputLibraries, otherLibraries, linkerType, linker, linkerArgs, flags, assemblyResources, linkerStampExe, linkerStampExeArgs )
+: LinkerNode( linkerOutputName, inputLibraries, otherLibraries, linkerType, linker, linkerArgs, flags, assemblyResources, importLibName, linkerStampExe, linkerStampExeArgs )
 {
 	m_Type = EXE_NODE;
 }
@@ -49,11 +50,12 @@ ExeNode::~ExeNode()
 	NODE_LOAD( uint32_t,		flags );
 	NODE_LOAD_DEPS( 0,			assemblyResources );
 	NODE_LOAD_DEPS( 0,			otherLibs );
+	NODE_LOAD( AStackString<>,	importLibName );
     NODE_LOAD_NODE( Node,		linkerStampExe );
     NODE_LOAD( AStackString<>,  linkerStampExeArgs );
 
 	NodeGraph & ng = FBuild::Get().GetDependencyGraph();
-	ExeNode * en = ng.CreateExeNode( name, inputLibs, otherLibs, linkerType, linker, linkerArgs, flags, assemblyResources, linkerStampExe, linkerStampExeArgs );
+	ExeNode * en = ng.CreateExeNode( name, inputLibs, otherLibs, linkerType, linker, linkerArgs, flags, assemblyResources, importLibName, linkerStampExe, linkerStampExeArgs );
 	return en;
 }
 
