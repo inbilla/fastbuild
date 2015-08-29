@@ -28,6 +28,7 @@
 LinkerNode::LinkerNode( const AString & linkerOutputName,
 						 const Dependencies & inputLibraries,
 						 const Dependencies & otherLibraries,
+						 const AString & linkerType,
 						 const AString & linker,
 						 const AString & linkerArgs,
 						 uint32_t flags,
@@ -63,6 +64,7 @@ LinkerNode::LinkerNode( const AString & linkerOutputName,
 	}
 
 	// store options we'll need to use dynamically
+	m_LinkerType = linkerType;
 	m_Linker = linker; // TODO:C This should be a node
 	m_LinkerArgs = linkerArgs;
 }
@@ -414,43 +416,82 @@ void LinkerNode::GetAssemblyResourceFiles( AString & fullArgs, const AString & p
 	}
 }
 
-// DetermineFlags
+// DetermineLinkerTypeFlags
 //------------------------------------------------------------------------------
-/*static*/ uint32_t LinkerNode::DetermineFlags( const AString & linkerName, const AString & args )
+/*static*/ uint32_t LinkerNode::DetermineLinkerTypeFlags(const AString & linkerType, const AString & linkerName)
 {
 	uint32_t flags = 0;
+	
+	if ( linkerType.IsEmpty() || linkerType.CompareI(AStackString<>("auto")) == 0 )
+	{
+		// Detect based upon linker executable name
+		if ( (linkerName.EndsWithI("link.exe") ) ||
+			(linkerName.EndsWithI("link") ) )
+		{
+			flags |= LinkerNode::LINK_FLAG_MSVC;
+		}
+		else if ( (linkerName.EndsWithI("gcc.exe") ) ||
+			(linkerName.EndsWithI("gcc") ) )
+		{
+			flags |= LinkerNode::LINK_FLAG_GCC;
+		}
+		else if ( (linkerName.EndsWithI("ps3ppuld.exe") ) ||
+			(linkerName.EndsWithI("ps3ppuld") ) )
+		{
+			flags |= LinkerNode::LINK_FLAG_SNC;
+		}
+		else if ( (linkerName.EndsWithI("orbis-ld.exe") ) ||
+			(linkerName.EndsWithI("orbis-ld") ) )
+		{
+			flags |= LinkerNode::LINK_FLAG_ORBIS_LD;
+		}
+		else if ( (linkerName.EndsWithI("elxr.exe") ) ||
+			(linkerName.EndsWithI("elxr") ) )
+		{
+			flags |= LinkerNode::LINK_FLAG_GREENHILLS_ELXR;
+		}
+		else if ( (linkerName.EndsWithI("mwldeppc.exe") ) ||
+			(linkerName.EndsWithI("mwldeppc.") ) )
+		{
+			flags |= LinkerNode::LINK_FLAG_CODEWARRIOR_LD;
+		}
+	}
+	else
+	{
+		if ( linkerType.CompareI(AStackString<>("msvc")) == 0 )
+		{
+			flags |= LinkerNode::LINK_FLAG_MSVC;
+		}
+		else if ( linkerType.CompareI(AStackString<>("gcc")) == 0 )
+		{
+			flags |= LinkerNode::LINK_FLAG_GCC;
+		}
+		else if ( linkerType.CompareI(AStackString<>("snc-ps3")) == 0 )
+		{
+			flags |= LinkerNode::LINK_FLAG_SNC;
+		}
+		else if ( linkerType.CompareI(AStackString<>("clang-orbis")) == 0 )
+		{
+			flags |= LinkerNode::LINK_FLAG_ORBIS_LD;
+		}
+		else if ( linkerType.CompareI(AStackString<>("greenhills-exlr")) == 0 )
+		{
+			flags |= LinkerNode::LINK_FLAG_GREENHILLS_ELXR;
+		}
+		else if ( linkerType.CompareI(AStackString<>("codewarrior-ld")) == 0 )
+		{
+			flags |= LinkerNode::LINK_FLAG_CODEWARRIOR_LD;
+		}
+	}
 
-	// Linker executable type
-	if ( ( linkerName.EndsWithI( "link.exe" ) ) ||
-		 ( linkerName.EndsWithI( "link" ) ) )
-	{
-		flags |= LinkerNode::LINK_FLAG_MSVC;
-	}
-	else if ( ( linkerName.EndsWithI( "gcc.exe" ) ) ||
-			  ( linkerName.EndsWithI( "gcc" ) ) )
-	{
-		flags |= LinkerNode::LINK_FLAG_GCC;
-	}
-	else if ( ( linkerName.EndsWithI( "ps3ppuld.exe" ) ) ||
-			  ( linkerName.EndsWithI( "ps3ppuld" ) ) )
-	{
-		flags |= LinkerNode::LINK_FLAG_SNC;
-	}
-	else if ( ( linkerName.EndsWithI( "orbis-ld.exe" ) ) ||
-			  ( linkerName.EndsWithI( "orbis-ld" ) ) )
-	{
-		flags |= LinkerNode::LINK_FLAG_ORBIS_LD;
-	}
-	else if ( ( linkerName.EndsWithI( "elxr.exe" ) ) ||
-			  ( linkerName.EndsWithI( "elxr" ) ) )
-	{
-		flags |= LinkerNode::LINK_FLAG_GREENHILLS_ELXR;
-	}
-	else if ( ( linkerName.EndsWithI( "mwldeppc.exe" ) ) ||
-			  ( linkerName.EndsWithI( "mwldeppc." ) ) )
-	{
-		flags |= LinkerNode::LINK_FLAG_CODEWARRIOR_LD;
-	}
+	return flags;
+}
+
+// DetermineFlags
+//------------------------------------------------------------------------------
+/*static*/ uint32_t LinkerNode::DetermineFlags( const AString & linkerType, const AString & linkerName, const AString & args )
+{
+	uint32_t flags = DetermineLinkerTypeFlags( linkerType, linkerName );
 
 	if ( flags & LINK_FLAG_MSVC )
 	{
@@ -612,6 +653,7 @@ void LinkerNode::EmitStampMessage() const
 	Dependencies staticDeps( m_StaticDependencies.Begin(), m_StaticDependencies.Begin() + count );
 
 	NODE_SAVE( m_Name );
+	NODE_SAVE( m_LinkerType );
 	NODE_SAVE( m_Linker );
 	NODE_SAVE( m_LinkerArgs );
 	NODE_SAVE_DEPS( staticDeps );
